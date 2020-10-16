@@ -2,11 +2,14 @@ import { Request, Response } from 'express';
 import { getRepository } from 'typeorm';
 import Orphanage from '../models/Orphanage';
 
+const orphanagesRepository = getRepository(Orphanage);
+
 export default {
   async index(request: Request, response: Response) {
-    const orphanagesRepository = getRepository(Orphanage);
 
-    const orphanages = await orphanagesRepository.find();
+    const orphanages = await orphanagesRepository.find({
+      relations: ['images']
+    });
 
     return response.json(orphanages);
   },
@@ -14,9 +17,9 @@ export default {
   async show(request: Request, response: Response) {
     const { id } = request.params;
 
-    const orphanagesRepository = getRepository(Orphanage);
-
-    const orphanage = await orphanagesRepository.findOneOrFail(id);
+    const orphanage = await orphanagesRepository.findOneOrFail(id ,{
+      relations: ['images']
+    });
 
     return response.json(orphanage);
   },
@@ -32,8 +35,13 @@ export default {
       open_on_weekends
     } = request.body;
   
-    const orphanagesRepository = getRepository(Orphanage);
-  
+    //that as is a hack to upload multiple files
+    const requestImages = request.files as Express.Multer.File[]; 
+
+    const images = requestImages.map(image => (
+      {path: image.filename}
+    ));
+
     const orphanage = orphanagesRepository.create({
       name,
       latitude,
@@ -41,7 +49,8 @@ export default {
       about,
       instructions,
       opening_hours,
-      open_on_weekends
+      open_on_weekends,
+      images
     });
   
     await orphanagesRepository.save(orphanage);
