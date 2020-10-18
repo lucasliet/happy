@@ -1,46 +1,18 @@
-import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View, Dimensions } from 'react-native';
-import MapView, { Marker, Callout, PROVIDER_GOOGLE } from 'react-native-maps';
 
-import mapMarker from './src/images/map-marker.png';
+import { useFonts } from 'expo-font';
+import { Nunito_600SemiBold, Nunito_700Bold, Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
+import { View } from 'react-native';
+import Routes from './src/routes';
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <MapView 
-        style={styles.map}
-        provider={PROVIDER_GOOGLE}
-        initialRegion={{ 
-          latitude: 0,
-          longitude: 0,
-          latitudeDelta: 0.008,
-          longitudeDelta: 0.008,
-        }}
-      >
-        <Marker 
-          icon={mapMarker}
-          coordinate={{
-            latitude: 0,
-            longitude: 0,
-          }}
-        >
-          <Callout>
-            <Text>Lar das Meninas</Text>
-          </Callout>
-        </Marker>
-      </MapView>
-    </View>
-  );
+  const [fontsLoaded] = useFonts({
+    nunito600: Nunito_600SemiBold,
+    nunito700: Nunito_700Bold, 
+    nunito800: Nunito_800ExtraBold
+  });
+
+  return !fontsLoaded
+  ? <View/>
+  : <Routes/>;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-
-  map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
-  }
-});
