@@ -1,9 +1,59 @@
-import React from 'react';
-import { ScrollView, View, StyleSheet, Switch, Text, TextInput, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, View, StyleSheet, Switch, Text, TextInput, TouchableOpacity, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { RectButton } from 'react-native-gesture-handler';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
+import api from '../../services/api';
 
 export default function OrphanageData() {
+  const route = useRoute();
+  const navigation = useNavigation();
+
+  const [images, setImages] = useState<string[]>([]);
+
+  const { position } = route.params as { position:{ latitude: number, longitude: number } }
+
+  async function handleSubmit() {
+    const { latitude, longitude } = position;
+
+    const formData = new FormData();
+
+    formData.append('latitude', String(latitude));
+    formData.append('longitude', String(longitude));
+    images.forEach((image, index) => formData.append('image', { 
+        name: `image_${index}.jpg`,
+        type: 'image/jpg',
+        uri: image,
+      } as any
+    ));
+    //TODO: Get other field through unform
+
+    await api.post('orphanages', formData);
+
+    navigation.navigate('OrphanagesMap');
+  }
+
+  async function handleSelectImages() {
+    const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
+
+    if (status !== 'granted') {
+      alert('Nós precisamos de acesso ao seu albúm para enviar as fotos');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      quality: 1,
+      mediaType: ImagePicker.MediaTypeOptions.Images,
+    });
+
+    if (result.cancelled) return;
+
+    const { uri: image } = result;
+
+    setImages([...images, image]);
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 24 }}>
       <Text style={styles.title}>Dados</Text>
@@ -19,12 +69,23 @@ export default function OrphanageData() {
         multiline
       />
 
-      <Text style={styles.label}>Whatsapp</Text>
+      {/* <Text style={styles.label}>Whatsapp</Text>
       <TextInput
         style={styles.input}
-      />
+      /> */}
 
       <Text style={styles.label}>Fotos</Text>
+
+      <View style={styles.uploadedImagesContainer}>
+        {images.map(image => (
+          <Image 
+            key={image}
+            source={{ uri: image}}
+            style={styles.uploadedImage}
+          />
+        ))}
+      </View>
+
       <TouchableOpacity style={styles.imagesInput} onPress={() => {}}>
         <Feather name="plus" size={24} color="#15B6D6" />
       </TouchableOpacity>
@@ -93,6 +154,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginBottom: 16,
     textAlignVertical: 'top',
+  },
+
+  uploadedImagesContainer: {
+    flexDirection: 'row',
+  },
+
+  uploadedImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    marginBottom: 32,
+    marginRight: 8,
   },
 
   imagesInput: {
