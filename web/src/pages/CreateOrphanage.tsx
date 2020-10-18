@@ -26,27 +26,25 @@ export default function CreateOrphanage() {
   const [images, setImages] = useState<File[]>([]);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
 
-  async function handleMapClick(event: LeafletMouseEvent) {
+  function pingHeroku() {
+    api.get('/')
+      .then(res => {
+        console.info('Heroku API found!');
+      })
+      .catch(err => {
+        console.error(`Heroku isn't responding: ${err}`);
+      })
+    ;
+  }
+  pingHeroku();
+
+  function handleMapClick(event: LeafletMouseEvent) {
     const { lat, lng } = event.latlng;
     
     setPosition({
       latitude: lat,
       longitude: lng,
     });
-
-    const formData = new FormData();
-
-    formData.append('latitude', String(position.latitude));
-    formData.append('longitude', String(position.longitude));
-    formData.append('open_on_weekends', String(open_on_weekends));
-    images.forEach(image => formData.append('image', image));
-    // TODO: Get other parameters from unform
-
-    await api.post('orphanages', formData);
-
-    alert('Cadastro realizado com sucesso');
-    
-    history.push('/app');
   }
 
   function handleSelectImages(event: ChangeEvent<HTMLInputElement>) {
@@ -62,11 +60,24 @@ export default function CreateOrphanage() {
     setPreviewImages(selectedImagesPreview);
   }
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     const { latitude, longitude } = position;
 
 
+    const formData = new FormData();
+
+    formData.append('latitude', String(position.latitude));
+    formData.append('longitude', String(position.longitude));
+    formData.append('open_on_weekends', String(open_on_weekends));
+    images.forEach(image => formData.append('image', image));
+    // TODO: Get other parameters from unform
+
+    await api.post('orphanages', formData);
+
+    alert('Cadastro realizado com sucesso');
+    
+    history.push('/app');
   }
 
   // TODO: Implement Unform
