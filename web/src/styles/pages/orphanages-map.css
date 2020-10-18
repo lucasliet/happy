@@ -83,8 +83,8 @@
 }
 
 #page-map .map-popup .leaflet-popup-content a {
-  width: 40;
-  height: 40;
+  width: 40px;
+  height: 40px;
   background-color: #15c3b6;
 
   box-shadow: 17px 27px 41px rgba(23, 142, 166, 0.16);
@@ -95,6 +95,6 @@
   align-items: center;
 }
 
-#page-map .map-popup .leaflet-popup-tip-content {
+#page-map .map-popup .leaflet-popup-tip-container {
   display: none;
 }
